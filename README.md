@@ -160,8 +160,8 @@ do
    
 filteringConsumer.closeMe()  
 ```
->    Filtering consumer: Is this seen
->    Filtering consumer: This too?
+>     Filtering consumer: Is this seen
+>     Filtering consumer: This too?
 
 ## Working with topics ##
 ```scala
@@ -185,13 +185,14 @@ tc3.closeMe()
  
 session.closeMyConnection()
 ```
->    From topic via tc1 Here's a shout out!
->    From topic via tc2 Here's a shout out!
->    From topic via tc3 null
+>      From topic via tc1 Here's a shout out!
+>      From topic via tc2 Here's a shout out!
+>      From topic via tc3 null
 
 ##A few items of note
 
-Uses of closeMe() is to close up resource allocation as I go along. You may not wish to do so and could just
-rely on a final session.closeMe() or session.closeMyConncection()
+Use of closeMe() is to close up resource allocation as we go along. 
+You may not wish to do so and could just rely on a final session.closeMe() or session.closeMyConncection()
+
 Any feedback is appreciated. I understand that I may well not currently cover all use cases and look forward to improving jmsScala.
 You can find some examples of jmsScala being used in the com.felstar.jmsScala.example package
