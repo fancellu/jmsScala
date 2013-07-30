@@ -68,7 +68,7 @@ val messages=q.browser().messages
 >     BROWSE World
 >     BROWSE Map(two -> 2, one -> 1)
 
-## Consume and print a the first 2 messages ##
+## Consume and print the first 2 messages ##
 ```scala
 println(messageConsumer.receiveText)
 println(messageConsumer.receiveText)
