@@ -254,7 +254,7 @@ object JMS {
         while (en.hasMoreElements())       
          seq +:= en.nextElement().asInstanceOf[Message]
 	    browser.close()
-	    seq reverse        
+	    seq.reverse
 	  }
 	 }
     }
