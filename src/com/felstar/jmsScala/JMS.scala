@@ -199,6 +199,11 @@ object JMS {
     def receiveText(timeout:Long=0):String= con.receive(timeout).asText
     def receiveMap:MapMessageType=receiveMap(0)
     def receiveMap(timeout:Long=0):MapMessageType=con.receive(timeout).asMap   
+    def listen(callback:Message => Unit) {
+        con.setMessageListener(
+          new MessageListener {def onMessage(x:Message) = callback(x)}
+        )
+    }
     def purge={
       var mess:Message=null
       do
