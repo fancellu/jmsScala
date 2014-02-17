@@ -1,0 +1,51 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Custom for Visual Studio
+*.cs     diff=csharp
+*.sln    merge=union
+*.csproj merge=union
+*.vbproj merge=union
+*.fsproj merge=union
+*.dbproj merge=union
+
+# Standard to msysgit
+*.doc	 diff=astextplain
+*.DOC	 diff=astextplain
+*.docx diff=astextplain
+*.DOCX diff=astextplain
+*.dot  diff=astextplain
+*.DOT  diff=astextplain
+*.pdf  diff=astextplain
+*.PDF	 diff=astextplain
+*.rtf	 diff=astextplain
+*.RTF	 diff=astextplain
+
+# These files are text and should be normalized (convert crlf => lf)
+*.c       text
+*.check   text
+*.css     text
+*.flags   text
+*.html    text
+*.java    text
+*.js      text
+*.policy  text
+*.sbt     text
+*.scala   text
+*.sh      text
+*.txt     text
+*.xml     text
+
+# Windows-specific files get windows endings
+*.bat     eol=crlf
+*.cmd     eol=crlf
+*-windows.tmpl eol=crlf
+
+# Some binary file types for completeness
+# (binary is a macro for -text -diff)
+*.dll     binary
+*.gif     binary
+*.jpg     binary
+*.png     binary
+*.class   -text diff=class
+*.jar     -text diff=jar
