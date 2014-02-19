@@ -248,6 +248,17 @@ object JMS {
 	 def asText={
 	   if (mess==null) null else mess.asInstanceOf[javax.jms.TextMessage].getText()	   
 	 }
+   def asBytes = {
+	   if (mess==null) null
+     else {
+       val byteMess = mess.asInstanceOf[javax.jms.BytesMessage]
+       val length = byteMess.getBodyLength().toInt
+       val dest = new Array[Byte](length)
+       val bytesRead = byteMess.readBytes(dest,length)
+       if (bytesRead != byteMess.getBodyLength()) throw new ArrayIndexOutOfBoundsException("Attempt to read message from JMS BytesMessage different number of bytes than indicated by body length")
+       dest
+     }
+   }
 	}
   }
   
