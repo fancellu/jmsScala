@@ -199,6 +199,11 @@ object JMS {
     def receiveText(timeout:Long=0):String= con.receive(timeout).asText
     def receiveMap:MapMessageType=receiveMap(0)
     def receiveMap(timeout:Long=0):MapMessageType=con.receive(timeout).asMap   
+    def listen(callback:Message => Unit) {
+        con.setMessageListener(
+          new MessageListener {def onMessage(x:Message) = callback(x)}
+        )
+    }
     def purge={
       var mess:Message=null
       do
@@ -243,6 +248,17 @@ object JMS {
 	 def asText={
 	   if (mess==null) null else mess.asInstanceOf[javax.jms.TextMessage].getText()	   
 	 }
+   def asBytes = {
+	   if (mess==null) null
+     else {
+       val byteMess = mess.asInstanceOf[javax.jms.BytesMessage]
+       val length = byteMess.getBodyLength().toInt
+       val dest = new Array[Byte](length)
+       val bytesRead = byteMess.readBytes(dest,length)
+       if (bytesRead != byteMess.getBodyLength()) throw new ArrayIndexOutOfBoundsException("Attempt to read message from JMS BytesMessage different number of bytes than indicated by body length")
+       dest
+     }
+   }
 	}
   }
   
@@ -254,7 +270,7 @@ object JMS {
         while (en.hasMoreElements())       
          seq +:= en.nextElement().asInstanceOf[Message]
 	    browser.close()
-	    seq reverse        
+	    seq.reverse
 	  }
 	 }
     }

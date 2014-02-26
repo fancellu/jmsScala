@@ -9,12 +9,23 @@ It provides Scala interfaces, metaphors and conversions that lead to tighter cod
 
 It should work with any compliant **JMS** driver, having already been tested against **[ActiveMQ 5.8.0](http://activemq.apache.org/download.html)** drivers
 
-Requires Scala 2.10+ 
+Requires Scala 2.10+ and JMS 1.1
 
 Firstly, make sure that your **JMS** java driver jars are included and are working.
 Perhaps run some java to make sure its all up and running.
 
-Then add
+To add to a sbt build, in the `project/Build.scala` file:
+
+```sbt
+import sbt._
+
+object ScalaPretradeBuild extends Build {
+  lazy val jmsScala = uri("git://github.com/fancellu/jmsScala")
+  lazy val root = Project("my-project-name", file(".")) dependsOn(jmsScala)
+}
+```
+
+Or, add:
 
 > com.felstar.jmsScala.JMS.scala  
 
