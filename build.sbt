@@ -4,7 +4,9 @@ version := "0.80"
 
 scalaVersion := "2.10.3"
 
-resolvers := Seq("JBoss" at "https://repository.jboss.org/nexus/content/groups/public")
+fullResolvers := {
+  ("JBoss" at "https://repository.jboss.org/nexus/content/groups/public") +: fullResolvers.value
+}
 
 libraryDependencies += "javax.jms" % "jms" % "1.1"
 
