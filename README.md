@@ -3,6 +3,12 @@
 
 *Author: [Dino Fancellu](http://dinofancellu.com)*
 
+To use as a library, just pull in from
+
+[https://jitpack.io/#fancellu/jmsScala](https://jitpack.io/#fancellu/jmsScala)
+
+[![Build Status](https://travis-ci.org/fancellu/jmsScala.svg?branch=master)](https://travis-ci.org/fancellu/jmsScala)
+
 **JMSscala** is a Scala Library to invoke JMS, the Java Message System.
 
 It provides Scala interfaces, metaphors and conversions that lead to tighter code and less boilerplate
@@ -13,23 +19,6 @@ Requires Scala 2.10.3/2.11.7 and JMS 1.1
 
 Firstly, make sure that your **JMS** java driver jars are included and are working.
 Perhaps run some java to make sure its all up and running.
-
-To add to a sbt build, in the `project/Build.scala` file:
-
-```sbt
-import sbt._
-
-object ScalaPretradeBuild extends Build {
-  lazy val jmsScala = uri("git://github.com/fancellu/jmsScala")
-  lazy val root = Project("my-project-name", file(".")) dependsOn(jmsScala)
-}
-```
-
-Or, add:
-
-> com.felstar.jmsScala.JMS.scala  
-
-to your code base. jmsScala is implemented in one file!
 
 Then in your Scala include in the following:
 
