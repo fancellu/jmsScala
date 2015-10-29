@@ -9,7 +9,7 @@ It provides Scala interfaces, metaphors and conversions that lead to tighter cod
 
 It should work with any compliant **JMS** driver, having already been tested against **[ActiveMQ 5.8.0](http://activemq.apache.org/download.html)** drivers
 
-Requires Scala 2.10+ and JMS 1.1
+Requires Scala 2.10.3 or 2.11.7 and JMS 1.1
 
 Firstly, make sure that your **JMS** java driver jars are included and are working.
 Perhaps run some java to make sure its all up and running.
