@@ -1,5 +1,4 @@
 language: scala
-script:
-  - sbt fullOptJS 
 scala:
    - 2.11.7
+   - 2.10.3
