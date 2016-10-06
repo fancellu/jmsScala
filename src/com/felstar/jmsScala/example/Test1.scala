@@ -34,7 +34,7 @@ import scala.actors.Actor._
     val connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616")
 
       val connection = connectionFactory.createConnection()
-      connection.start
+      connection.start()
       
       val session = connection.session(false, Session.AUTO_ACKNOWLEDGE)
 
@@ -42,7 +42,7 @@ import scala.actors.Actor._
       
       val messageConsumer = q.consumer
       	// clean up queue, consuming all messages
-      messageConsumer.purge
+      messageConsumer.purge()
         // send a couple of text messages
       val prod = q.producer.deliveryMode(NON_PERSISTENT)
         .send("Hello").send("World")
@@ -67,7 +67,7 @@ import scala.actors.Actor._
       println(message.propertiesMap)
 
       	// create own internal queue, send text message
-      val tq=session.temporaryQueue      
+      val tq=session.temporaryQueue()
       tq.producer.send("A temp message").closeMe()
        // get the text back
       val tqConsumer=tq.consumer
@@ -86,7 +86,7 @@ import scala.actors.Actor._
       
        // create an anonymous producer
       
-      val anonProd=session.anonProducer  
+      val anonProd=session.anonProducer()
        // when sending we specify destination
       anonProd.send("Sent from anon producer",q).closeMe()      
       

@@ -31,7 +31,7 @@ Create your session, e.g.
 ```scala
 val connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616")
 val connection = connectionFactory.createConnection()
-connection.start
+connection.start()
       
 val session = connection.session(false, Session.AUTO_ACKNOWLEDGE)
 ```
@@ -44,7 +44,7 @@ The above uri and connection factory is dependent on the driver used
 val q=session.queue("yikes")      
 val messageConsumer = q.consumer
   	// clean up queue, consuming all messages
-messageConsumer.purge
+messageConsumer.purge()
 ```
   
 ## Send a couple of text messages ##
@@ -90,7 +90,7 @@ println(message.propertiesMap)
 
 ## Working with a temporary queue ##
 ```scala
-val tq=session.temporaryQueue      
+val tq=session.temporaryQueue()      
 tq.producer.send("A temp message").closeMe()
     // get the text back
 val tqConsumer=tq.consumer
@@ -131,7 +131,7 @@ val echoActor = actor {
 
 ## Working with anonymous producer ##
 ```scala
-val anonProd=session.anonProducer   
+val anonProd=session.anonProducer()   
   // when sending we specify destination   
 anonProd.send("Sent from anon producer",q).closeMe() 
 ```

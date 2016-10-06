@@ -298,7 +298,7 @@ object JMS {
   trait ImplicitQueueBrowser {
 
     implicit class MyQueueBrowser(browser: QueueBrowser) {
-      def messages(): Seq[Message] = {
+      def messages: Seq[Message] = {
         val result = browser.getEnumeration.asScala.collect { case m: Message => m }.toSeq.reverse
         browser.close()
         result
