@@ -1,1 +1,13 @@
 target
+.idea
+out
+lib_managed/
+src_managed/
+project/boot/
+.history
+.cache
+*.class
+*.log
+.lib/
+dist/*
+project/plugins/project/
