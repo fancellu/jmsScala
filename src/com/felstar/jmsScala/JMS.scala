@@ -2,6 +2,7 @@ package com.felstar.jmsScala
 
 import javax.jms._
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
@@ -18,13 +19,13 @@ object JMS {
   import AllImplicits._
 
   private val session2connection = mutable.WeakHashMap[Session, Connection]()
-  private var dest2session = mutable.WeakHashMap[Destination, Session]()
-  private var prod2session = mutable.WeakHashMap[MessageProducer, Session]()
-  private var cons2session = mutable.WeakHashMap[MessageConsumer, Session]()
+  private val dest2session = mutable.WeakHashMap[Destination, Session]()
+  private val prod2session = mutable.WeakHashMap[MessageProducer, Session]()
+  private val cons2session = mutable.WeakHashMap[MessageConsumer, Session]()
 
   trait ImplicitConnection {
 
-    implicit class MyConnection(val conn: Connection) {
+    implicit class MyConnection(conn: Connection) {
       def session(transacted: Boolean, acknowledgeMode: Int): Session = {
         val sess = conn.createSession(transacted, acknowledgeMode)
         session2connection += sess -> conn
@@ -36,14 +37,14 @@ object JMS {
 
   trait ImplicitSession {
 
-    implicit class MySession(val sess: Session) {
+    implicit class MySession(sess: Session) {
       def queue(queueName: String): Queue = {
         val queue = sess.createQueue(queueName)
         dest2session += queue -> sess
         queue
       }
 
-      def temporaryQueue = {
+      def temporaryQueue(): TemporaryQueue = {
         val queue: TemporaryQueue = sess.createTemporaryQueue
         dest2session += queue -> sess
         queue
@@ -55,13 +56,13 @@ object JMS {
         topic
       }
 
-      def temporaryTopic: TemporaryTopic = {
+      def temporaryTopic(): TemporaryTopic = {
         val topic = sess.createTemporaryTopic
         dest2session += topic -> sess
         topic
       }
 
-      def anonProducer: MessageProducer = {
+      def anonProducer(): MessageProducer = {
         val prod = sess.createProducer(null)
         prod2session += prod -> sess
         prod
@@ -71,9 +72,9 @@ object JMS {
         if (sess != null) sess.close()
         synchronized {
           session2connection -= sess
-          dest2session = dest2session filterNot { case (dest, session) => session == sess }
-          prod2session = prod2session filterNot { case (prod, session) => session == sess }
-          cons2session = cons2session filterNot { case (cons, session) => session == sess }
+          dest2session.retain { case (_, session) => session != sess }
+          prod2session.retain { case (_, session) => session != sess }
+          cons2session.retain { case (_, session) => session != sess }
         }
       }
 
@@ -89,7 +90,7 @@ object JMS {
 
   trait ImplicitDestination {
 
-    implicit class MyDestination(val dest: Destination) {
+    implicit class MyDestination(dest: Destination) {
       def producer: MessageProducer = {
         val session = dest2session(dest)
         val prod = session.createProducer(dest)
@@ -116,7 +117,7 @@ object JMS {
 
   trait ImplicitTopic {
 
-    implicit class MyTopic(val topic: Topic) {
+    implicit class MyTopic(topic: Topic) {
       def durable(name: String): TopicSubscriber = {
         val session = dest2session(topic)
         val sub = session.createDurableSubscriber(topic, name)
@@ -136,12 +137,9 @@ object JMS {
 
   trait ImplicitQueue {
 
-    implicit class MyQueue(val queue: Queue) {
-      def browser(messageSelector: String = null): QueueBrowser = {
-        val session = dest2session(queue)
-        val browser = session.createBrowser(queue, messageSelector)
-        browser
-      }
+    implicit class MyQueue(queue: Queue) {
+      def browser(messageSelector: String = null): QueueBrowser =
+        dest2session(queue).createBrowser(queue, messageSelector)
     }
 
   }
@@ -150,12 +148,10 @@ object JMS {
 
   trait ImplicitProducer {
 
-    implicit class MyProducer(val prod: MessageProducer) {
+    implicit class MyProducer(prod: MessageProducer) {
 
-      def create(text: String): TextMessage = {
-        val session = prod2session(prod)
-        session.createTextMessage(text)
-      }
+      def create(text: String): TextMessage =
+        prod2session(prod).createTextMessage(text)
 
       def sendWith(text: String, dest: Destination = null)(f: Message => Unit): MessageProducer = {
         val mess = create(text)
@@ -171,12 +167,8 @@ object JMS {
       }
 
       def create(map: MapMessageType): MapMessage = {
-        val session = prod2session(prod)
-        val mapMessage = session.createMapMessage()
-
-        for ((k, v) <- map) {
-          mapMessage.setObject(k, v)
-        }
+        val mapMessage = prod2session(prod).createMapMessage()
+        map.foreach { case (k, v) => mapMessage.setObject(k, v) }
         mapMessage
       }
 
@@ -218,7 +210,7 @@ object JMS {
         prod
       }
 
-      def closeMe() {
+      def closeMe(): Unit = {
         prod.close()
         prod2session -= prod
       }
@@ -228,7 +220,7 @@ object JMS {
 
   trait ImplicitConsumer {
 
-    implicit class MyConsumer(val con: MessageConsumer) {
+    implicit class MyConsumer(con: MessageConsumer) {
       def receiveText: String = receiveText(0)
 
       def receiveText(timeout: Long = 0): String = con.receive(timeout).asText
@@ -246,10 +238,7 @@ object JMS {
       }
 
       def purge(): Unit = {
-        var mess: Message = null
-        do {
-          mess = con.receive(100)
-        } while (mess != null)
+        while (con.receive(100) != null) {}
       }
 
       def closeMe(): Unit = {
@@ -262,32 +251,28 @@ object JMS {
 
   trait ImplicitMessage {
 
-    implicit class MyMessage(val mess: Message) {
-      def propertiesMap: MapMessageType = {
-        var map = Map.empty[String, Any]
-        val en = mess.getPropertyNames
-        while (en.hasMoreElements) {
-          val key = en.nextElement().toString
-          map += key -> mess.getObjectProperty(key)
-        }
-        map
-      }
+    implicit class MyMessage(mess: Message) {
+      def propertiesMap: MapMessageType =
+        mess.getPropertyNames.asScala
+          .map { name =>
+            val nameString = name.toString
+            nameString -> mess.getObjectProperty(nameString)
+          }.toMap
+
 
       def propertiesMap(map: MapMessageType): Message = {
-        for ((k, v) <- map) mess.setObjectProperty(k, v)
+        map.foreach { case (k, v) => mess.setObjectProperty(k, v) }
         mess
       }
 
       def asMap: MapMessageType = {
         if (mess == null) return null
         val mm = mess.asInstanceOf[javax.jms.MapMessage]
-        var map = Map.empty[String, Any]
-        val en = mm.getMapNames
-        while (en.hasMoreElements) {
-          val key = en.nextElement().toString
-          map += key -> mm.getObject(key)
-        }
-        map
+        mm.getMapNames.asScala
+          .map { name =>
+            val nameString = name.toString
+            nameString -> mm.getObject(nameString)
+          }.toMap
       }
 
       def asText: String = {
@@ -301,7 +286,8 @@ object JMS {
           val length = byteMess.getBodyLength.toInt
           val dest = new Array[Byte](length)
           val bytesRead = byteMess.readBytes(dest, length)
-          if (bytesRead != byteMess.getBodyLength) throw new ArrayIndexOutOfBoundsException("Attempt to read message from JMS BytesMessage different number of bytes than indicated by body length")
+          if (bytesRead != byteMess.getBodyLength)
+            throw new ArrayIndexOutOfBoundsException("Attempt to read message from JMS BytesMessage different number of bytes than indicated by body length")
           dest
         }
       }
@@ -311,17 +297,13 @@ object JMS {
 
   trait ImplicitQueueBrowser {
 
-    implicit class MyQueueBrowser(val browser: QueueBrowser) {
-      def messages() = {
-        var seq = Seq[Message]()
-        val en = browser.getEnumeration()
-        while (en.hasMoreElements())
-          seq +:= en.nextElement().asInstanceOf[Message]
+    implicit class MyQueueBrowser(browser: QueueBrowser) {
+      def messages(): Seq[Message] = {
+        val result = browser.getEnumeration.asScala.collect { case m: Message => m }.toSeq.reverse
         browser.close()
-        seq.reverse
+        result
       }
     }
-
   }
 
   object AllImplicits
