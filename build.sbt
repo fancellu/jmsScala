@@ -1,6 +1,6 @@
 name := "jmsScala"
 
-version := "0.81"
+version := "0.82"
 
 scalaVersion := "2.11.8"
 
