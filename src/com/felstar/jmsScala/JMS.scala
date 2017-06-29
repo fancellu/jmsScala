@@ -78,7 +78,7 @@ object JMS {
         }
       }
 
-      def closeMyConnection(): Unit = {
+      def closeMyConnection() = {
         synchronized {
           session2connection.get(sess).foreach(_.close)
           closeMe()
@@ -221,18 +221,18 @@ object JMS {
   trait ImplicitConsumer {
 
     implicit class MyConsumer(con: MessageConsumer) {
-      def receiveText: String = receiveText(0)
+      def receiveText: String = receiveText()
 
       def receiveText(timeout: Long = 0): String = con.receive(timeout).asText
 
-      def receiveMap: MapMessageType = receiveMap(0)
+      def receiveMap: MapMessageType = receiveMap()
 
       def receiveMap(timeout: Long = 0): MapMessageType = con.receive(timeout).asMap
 
       def listen(callback: Message => Unit): Unit = {
         con.setMessageListener(
           new MessageListener {
-            def onMessage(x: Message) = callback(x)
+            def onMessage(x: Message): Unit = callback(x)
           }
         )
       }
