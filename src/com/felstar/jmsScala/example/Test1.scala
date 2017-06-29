@@ -10,7 +10,7 @@ import javax.jms.Message
 import javax.jms.TextMessage
 import javax.jms.MapMessage
 
-object Test1{
+object Test1 {
 
 import scala.actors.Actor
 import scala.actors.Actor._
@@ -29,17 +29,17 @@ import scala.actors.Actor._
       }
     }
   }
-  
+
   def main(args: Array[String]): Unit = {
     val connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616")
 
       val connection = connectionFactory.createConnection()
       connection.start()
-      
+
       val session = connection.session(false, Session.AUTO_ACKNOWLEDGE)
 
       val q=session.queue("yikes")
-      
+
       val messageConsumer = q.consumer
       	// clean up queue, consuming all messages
       messageConsumer.purge()
@@ -73,50 +73,50 @@ import scala.actors.Actor._
       val tqConsumer=tq.consumer
       println("TemporaryQueue: "+tqConsumer.receiveText)
       tqConsumer.closeMe()
-      
+
        // setup listener to route incoming to echoActor
       echoActor ! "About to set up async message consumer"
       Thread.sleep(1000)
        // receives async incoming messages, routes to actor
        messageConsumer.setMessageListener(new MessageListener(){
-          def onMessage(mess:javax.jms.Message)=  echoActor ! mess         
+          def onMessage(mess:javax.jms.Message)=  echoActor ! mess
        })
        // the following should be seen in the echoActor
       prod.send("Hello, this should be seen async")
-      
+
        // create an anonymous producer
-      
+
       val anonProd=session.anonProducer()
        // when sending we specify destination
-      anonProd.send("Sent from anon producer",q).closeMe()      
-      
+      anonProd.send("Sent from anon producer",q).closeMe()
+
       Thread.sleep(1000)
        // shut down the async message handling
       messageConsumer.closeMe()
-      echoActor ! Stop 
-      
+      echoActor ! Stop
+
        // setup consumer to just handle certain messages
       val filteringConsumer=q.consumer("type='misc'")
-            
+
       prod.send("Ignored: Hopefully not seen by filtering consumer")
       prod.sendWith("Is this seen"){_.propertiesMap(Map("type"->"misc"))}
       prod.sendWith("This too?"){_.propertiesMap(Map("type"->"misc","amount"->42))}
-      
+
       var text:String=null
       do
       {
-       text=filteringConsumer.receiveText(1000)       
-       if (text!=null) println("Filtering consumer: "+text)       
+       text=filteringConsumer.receiveText(1000)
+       if (text!=null) println("Filtering consumer: "+text)
       } while (text!=null)
-      
+
         // will leave ignored on the queue
-       
+
        filteringConsumer.closeMe()
-       prod.closeMe()       
-        
+       prod.closeMe()
+
        // create 3 topic consumers, but last one is created after message sent
      val topic=session.topic("messageboard")
-          
+
      val tc1=topic.consumer
      val tc2=topic.consumer
      val tp=topic.producer.send("Here's a shout out!").closeMe()
@@ -129,7 +129,7 @@ import scala.actors.Actor._
       // 3rd will not see it, returns null after 1 second timeout
      println("From topic via tc3 "+tc3.receiveText(1000))
      tc3.closeMe()
-     
+
      session.closeMyConnection()
     }
 }
