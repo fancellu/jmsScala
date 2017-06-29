@@ -11,7 +11,7 @@ import scala.collection.mutable
   * Would be nice if I got attribution. Thanks.
   *
   * @author Dino Fancellu (Felstar Ltd)
-  * @version 0.80
+  * @version 0.83
   *
   */
 object JMS {
