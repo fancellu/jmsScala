@@ -78,7 +78,7 @@ object JMS {
         }
       }
 
-      def closeMyConnection() = {
+      def closeMyConnection(): Unit = {
         synchronized {
           session2connection.get(sess).foreach(_.close)
           closeMe()
